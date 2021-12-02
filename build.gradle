@@ -22,7 +22,9 @@ configurations.all {
 
 subprojects {
     repositories {
+        jcenter()
         mavenLocal()
+        mavenCentral()
         maven {
             url "https://oss.jfrog.org/jfrog-dependencies"
         }
