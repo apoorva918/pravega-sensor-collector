@@ -1,0 +1,10 @@
+version: '3.4'
+
+services:
+  pravegasensorcollector:
+    image: pravegasensorcollector
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - 9090:9090

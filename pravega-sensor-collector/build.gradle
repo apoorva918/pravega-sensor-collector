@@ -7,9 +7,20 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
+ buildscript {
+     repositories {
+        mavenLocal()
+        mavenCentral()
+    }
+    dependencies {
+        classpath("se.transmode.gradle:gradle-docker:1.2")
+    }
+}
+
 apply plugin: "java"
 apply plugin: "maven"
 apply plugin: "application"
+apply plugin: "docker"
 
 group = "io.pravega"
 archivesBaseName = "pravega-sensor-collector"
@@ -59,6 +70,15 @@ distributions {
 
 distTar {
     compression = "GZIP"
+}
+
+jar {
+    manifest {
+        attributes "Main-Class": "$mainClassName"
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
 }
 
 startScripts {
