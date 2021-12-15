@@ -8,3 +8,4 @@ services:
       dockerfile: ./Dockerfile
     ports:
       - 9090:9090
+      - 8083:8083

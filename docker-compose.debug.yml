@@ -10,4 +10,5 @@ services:
       JAVA_OPTS: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005,quiet=y
     ports:
       - 9090:9090
+      - 8083:8083
       - 5005:5005
