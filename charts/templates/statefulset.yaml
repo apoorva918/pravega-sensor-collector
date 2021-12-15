@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Release.Name }}
+spec:
+  serviceName: {{ .Release.Name | quote}}
+  replicas: 1
+  selector:
+    matchLabels:
+      release: {{ .Release.Name }} # has to match .spec.template.metadata.labels
+  template:
+    metadata:
+      annotations:
+        nautilus.dellemc.com/pravega-environment: "{{ .Release.Namespace }}-pravega"
+      labels:
+        release: {{ .Release.Name }} # has to match .spec.selector.matchLabels
+    spec:
+      containers:
+      - name: {{ .Release.Name }}
+        image: {{ .Values.image.repository }}
+        env:
+        - name: JAVA_HOME
+          value: "/usr/local/openjdk-11"
+        {{- range $key, $value := .Values.env }}
+        - name: {{ $key }}
+          value: {{ $value | quote }}
+        {{- end }}
