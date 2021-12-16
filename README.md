@@ -259,6 +259,47 @@ If DNS is not configured throughout your network, you may need to edit the /etc/
     sudo systemctl status pravega-sensor-collector.service
     sudo journalctl -u pravega-sensor-collector.service -n 1000 --follow
 
+### Kubernetes deployment
+
+1. Create a `values.yaml` file in `pravega-sensor-collector/charts` with the required fields. For example:
+```shell
+image:
+  repository: devops-repo.isus.emc.com:8116/nautilus/pravegasensorcollector:1.0.0
+env:
+  PRAVEGA_SENSOR_COLLECTOR_NET2_CLASS: "io.pravega.sensor.collector.network.NetworkDriver"
+  PRAVEGA_SENSOR_COLLECTOR_NET2_NETWORK_INTERFACE: "lo"
+  PRAVEGA_SENSOR_COLLECTOR_NET2_MEMORY_QUEUE_CAPACITY_ELEMENTS: "10000"
+  PRAVEGA_SENSOR_COLLECTOR_NET2_SAMPLES_PER_EVENT: "100"
+  PRAVEGA_SENSOR_COLLECTOR_NET2_SAMPLES_PER_SEC: "100"
+  PRAVEGA_SENSOR_COLLECTOR_NET2_PERSISTENT_QUEUE_FILE: "/tmp/network-lo.db"
+  PRAVEGA_SENSOR_COLLECTOR_NET2_PERSISTENT_QUEUE_CAPACITY_EVENTS: "100"
+  PRAVEGA_SENSOR_COLLECTOR_NET2_SCOPE: "examples"
+  PRAVEGA_SENSOR_COLLECTOR_NET2_CREATE_SCOPE: "false"
+  PRAVEGA_SENSOR_COLLECTOR_NET2_STREAM: "network"
+  PRAVEGA_SENSOR_COLLECTOR_NET2_ROUTING_KEY: "routingkey1"
+  PRAVEGA_SENSOR_COLLECTOR_NET2_EXACTLY_ONCE: "false"
+  PRAVEGA_SENSOR_COLLECTOR_NET2_PRAVEGA_CONTROLLER_URI: "tls://pravega-controller.${sdp_domain_name}:443"
+```
+2. Install the helm chart
+```shell
+admin@gw1:~$
+helm upgrade --install pravegasensorcollector charts --namespace ${NAMESPACE} 
+```
+
+### Deploying in docker
+
+1. Build and push the image 
+```shell
+admin@gw1:~$
+./scripts/docker-build.sh
+```
+
+2. Edit the `ENVVARS` per the required configuration in `/pravega-sensor-collector/scripts/docker-run.sh` and run the script to deploy the container.
+```shell
+admin@gw1:~$
+ ./scripts/docker-run.sh
+```
+
 ## Data File Ingestion
 
 ### Overview
