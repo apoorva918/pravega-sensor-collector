@@ -24,5 +24,5 @@ chmod go-rw ~/keycloak.crt
 kubectl get secret pravega-tls -n nautilus-pravega -o jsonpath="{.data.tls\.crt}" | base64 --decode > ~/pravegaAll.crt
 chmod go-rw ~/pravegaAll.crt 
 
-echo | openssl s_client -showcerts -servername keycloak.unicorn.ns.sdp.hop.lab.emc.com -connect keycloak.unicorn.ns.sdp.hop.lab.emc.com:443 2>/dev/null |  sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > ~/keycloakIng.crt
+echo | openssl s_client -showcerts -servername keycloak.${SDP_DOMAIN} -connect keycloak.${SDP_DOMAIN}:443 2>/dev/null |  sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > ~/keycloakIng.crt
 chmod go-rw ~/keycloakIng.crt 
