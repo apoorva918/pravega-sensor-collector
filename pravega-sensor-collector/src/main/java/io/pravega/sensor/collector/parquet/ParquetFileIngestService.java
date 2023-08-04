@@ -117,7 +117,7 @@ public class ParquetFileIngestService extends DeviceDriver{
         return Double.parseDouble(getProperty(TRANSACTION_TIMEOUT_MINUTES_KEY, Double.toString(18.0 * 60.0)));
     }
 
-    protected void ingestParquetFiles() {
+    protected synchronized void ingestParquetFiles() {
         log.info("ingestParquetFiles: BEGIN");
         try {
             processor.ingestParquetFiles();

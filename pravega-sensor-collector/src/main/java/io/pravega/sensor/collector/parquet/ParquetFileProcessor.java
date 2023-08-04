@@ -88,7 +88,7 @@ public class ParquetFileProcessor {
     }
 
     public void ingestParquetFiles() throws Exception {
-        log.info("ingestParquetFiles: BEGIN");
+        log.info("ingestParquetFilesProcessor: BEGIN");
         findAndRecordNewFiles();
         processNewFiles();
         if (config.enableDeleteCompletedFiles) {
@@ -173,8 +173,8 @@ public class ParquetFileProcessor {
         final long t0 = System.nanoTime();
         // In case a previous iteration encountered an error, we need to ensure that
         // previous flushed transactions are committed and any unflushed transactions as aborted.
-        transactionCoordinator.performRecovery();
-        writer.abort();
+        transactionCoordinator.performRecovery();  
+        // writer.abort();  
 
         try (final InputStream inputStream = new FileInputStream(fileNameWithBeginOffset.fileName)) {
             final CountingInputStream countingInputStream = new CountingInputStream(inputStream);
@@ -184,8 +184,15 @@ public class ParquetFileProcessor {
                         log.trace("processFile: event={}", e);
                         try {
                             writer.writeEvent(e.routingKey, e.bytes);
+                            // injectCommitFailure();
                         } catch (TxnFailedException ex) {
+                            log.info("Transaction failed");
                             throw new RuntimeException(ex);
+                        }
+                        catch (Exception exp){
+                            log.info("Transaction failed");
+                            writer.abort();
+                            throw new RuntimeException(exp);
                         }
                     });
             final Optional<UUID> txnId = writer.flush();

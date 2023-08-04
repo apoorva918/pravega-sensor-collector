@@ -73,8 +73,11 @@ public class TransactionalEventWriter<T> implements EventWriter<T> {
 
     public void abort() {
         if (currentTxn != null) {
-            log.info("abort: aborting transaction {}", currentTxn.getTxnId());
-            currentTxn.abort();
+            log.info("Current transaction status= {}", currentTxn.checkStatus());
+            if(!currentTxn.checkStatus().equals(Transaction.Status.COMMITTED)){
+                log.info("abort: aborting transaction {}", currentTxn.getTxnId());
+                currentTxn.abort();
+            }
             currentTxn = null;
         }
     }
