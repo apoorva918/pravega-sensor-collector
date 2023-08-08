@@ -63,11 +63,13 @@ public class EventGenerator {
      * @return next sequence number, end offset
      */
     protected Pair<Long, Long> generateEventsFromInputStream(CountingInputStream inputStream, long firstSequenceNumber, Consumer<PravegaWriterEvent> consumer) throws IOException {
-        final CSVFormat format = CSVFormat.DEFAULT.withFirstRecordAsHeader();
+        final CSVFormat format = CSVFormat.DEFAULT.withFirstRecordAsHeader().withQuote(null);
         final CSVParser parser = CSVParser.parse(inputStream, StandardCharsets.UTF_8, format);
         long nextSequenceNumber = firstSequenceNumber;
         int numRecordsInEvent = 0;
         ObjectNode jsonEvent = null;
+        int recCount=0;
+        final long t1 = System.nanoTime();
         for (CSVRecord record: parser) {
             if (numRecordsInEvent >= maxRecordsPerEvent) {
                 consumer.accept(new PravegaWriterEvent(routingKey, nextSequenceNumber, mapper.writeValueAsBytes(jsonEvent)));
@@ -82,12 +84,19 @@ public class EventGenerator {
                 addValueToArray(jsonEvent, entry.getKey(), entry.getValue());
             }
             numRecordsInEvent++;
+            recCount++;
+            
         }
+        
+        final double processMs = (double) (System.nanoTime() - t1) * 1e-6;
+        log.info("Finished processing {} records in {} ms", recCount, processMs);
+
         if (jsonEvent != null) {
             consumer.accept(new PravegaWriterEvent(routingKey, nextSequenceNumber, mapper.writeValueAsBytes(jsonEvent)));
             nextSequenceNumber++;
         }
         final long endOffset = inputStream.getCount();
+        log.info("Record count: {}", recCount);
         return new ImmutablePair<>(nextSequenceNumber, endOffset);
     }
 

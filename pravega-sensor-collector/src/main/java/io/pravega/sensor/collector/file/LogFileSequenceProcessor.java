@@ -134,8 +134,11 @@ public class LogFileSequenceProcessor {
      */
     static protected List<FileNameWithOffset> getDirectoryListing(String fileSpec) throws IOException {
         final Path pathSpec = Paths.get(fileSpec);
-        try (DirectoryStream<Path> dirStream = Files.newDirectoryStream(pathSpec.getParent(), pathSpec.getFileName().toString())) {
-            return StreamSupport.stream(dirStream.spliterator(), false)
+        // List<FileNameWithOffset> directoryListing = new ArrayList<>();
+        // try (DirectoryStream<Path> dirStream = Files.newDirectoryStream(pathSpec.getParent(), pathSpec.getFileName().toString())) {
+        //     return StreamSupport.stream(dirStream.spliterator(), false)
+        try(DirectoryStream<Path> dirStream=Files.newDirectoryStream(pathSpec)){
+            return StreamSupport.stream(dirStream.spliterator(),false)
                     .map(f -> new FileNameWithOffset(f.toAbsolutePath().toString(), f.toFile().length()))
                     .collect(Collectors.toList());
         }
@@ -175,7 +178,10 @@ public class LogFileSequenceProcessor {
                     e -> {
                         log.trace("processFile: event={}", e);
                         try {
+                            final long t0 = System.nanoTime();
                             writer.writeEvent(e.routingKey, e.bytes);
+                            final double processMs = (double) (System.nanoTime() - t0) * 1e-6;
+                            log.info("Finished writing {} bytes in {} ms", e.bytes.length, processMs);
                         } catch (TxnFailedException ex) {
                             throw new RuntimeException(ex);
                         }
